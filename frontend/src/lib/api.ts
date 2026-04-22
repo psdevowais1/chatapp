@@ -16,6 +16,7 @@ interface User {
   email: string;
   name: string;
   profilePhoto?: string | null;
+  role?: string;
   createdAt: string;
 }
 
@@ -229,6 +230,31 @@ class ApiClient {
     return this.request<Conversation>(`/groups/${conversationId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
+    });
+  }
+
+  // Superuser methods
+  async createUser(data: { email: string; password: string; name: string }): Promise<User> {
+    return this.request<User>('/superuser/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getUsers(): Promise<(User & { _count?: { messagesSent: number; conversations: number } })[]> {
+    return this.request<(User & { _count?: { messagesSent: number; conversations: number } })[]>('/superuser/users');
+  }
+
+  async updateUser(userId: string, data: { name?: string; email?: string; password?: string }): Promise<User> {
+    return this.request<User>(`/superuser/users/${userId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteUser(userId: string): Promise<{ success: boolean; message: string }> {
+    return this.request<{ success: boolean; message: string }>(`/superuser/users/${userId}`, {
+      method: 'DELETE',
     });
   }
 }

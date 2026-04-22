@@ -80,27 +80,28 @@ export default function NewChatModal({ isOpen, onClose }: NewChatModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#2a2a2a] rounded-lg w-full max-w-md p-6 border border-[#404040]">
+    <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
+      <div className="rounded-xl w-full max-w-md p-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">New Chat</h2>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>New Chat</h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-[#3a3a3a] rounded-lg transition-colors"
+            className="p-1 rounded-lg transition-colors"
+            style={{ background: 'var(--surface-light)' }}
           >
-            <X className="w-5 h-5 text-[#a0a0a0]" />
+            <X className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-900/30 border border-red-700 rounded-lg">
-            <p className="text-sm text-red-400">{error}</p>
+          <div className="mb-4 p-3 rounded-lg" style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid var(--danger)' }}>
+            <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>
           </div>
         )}
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#a0a0a0] mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-muted)' }}>
               Search by email
             </label>
             <div className="flex gap-2">
@@ -110,13 +111,15 @@ export default function NewChatModal({ isOpen, onClose }: NewChatModalProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearchUser()}
                 placeholder="Enter email address"
-                className="flex-1 px-3 py-2 border border-[#404040] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f5b229] text-white bg-[#3a3a3a]"
+                className="flex-1 px-3 py-2 rounded-lg focus:outline-none"
+                style={{ border: '1px solid var(--border)', background: 'var(--surface-light)', color: 'var(--foreground)' }}
               />
               <button
                 type="button"
                 onClick={handleSearchUser}
                 disabled={isLoading}
-                className="px-3 py-2 bg-[#f5b229] text-black rounded-lg hover:bg-[#d99a1f] disabled:opacity-50 transition-colors"
+                className="px-3 py-2 rounded-lg disabled:opacity-50 transition-colors"
+                style={{ background: 'var(--foreground)', color: 'var(--background)' }}
               >
                 <Search className="w-5 h-5" />
               </button>
@@ -124,29 +127,30 @@ export default function NewChatModal({ isOpen, onClose }: NewChatModalProps) {
           </div>
 
           {foundUser && (
-            <div className="p-4 bg-[#3a3a3a] rounded-lg border border-[#404040]">
+            <div className="p-4 rounded-lg" style={{ background: 'var(--surface-light)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#4a4a4a] rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)' }}>
                   {foundUser.profilePhoto ? (
-                    <img 
-                      src={foundUser.profilePhoto} 
-                      alt={foundUser.name} 
+                    <img
+                      src={foundUser.profilePhoto}
+                      alt={foundUser.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                   ) : (
-                    <User className="w-5 h-5 text-[#a0a0a0]" />
+                    <User className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-white">{foundUser.name}</p>
-                  <p className="text-sm text-[#a0a0a0]">{foundUser.email}</p>
+                  <p className="font-medium" style={{ color: 'var(--foreground)' }}>{foundUser.name}</p>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{foundUser.email}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={handleStartChat}
                 disabled={isLoading}
-                className="w-full mt-3 py-2 bg-[#f5b229] text-black rounded-lg hover:bg-[#d99a1f] disabled:opacity-50 transition-colors"
+                className="w-full mt-3 py-2 rounded-lg disabled:opacity-50 transition-colors"
+                style={{ background: 'var(--foreground)', color: 'var(--background)' }}
               >
                 {isLoading ? 'Starting...' : 'Start Conversation'}
               </button>

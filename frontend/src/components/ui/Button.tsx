@@ -9,19 +9,26 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', isLoading, className = '', children, disabled, ...props }, ref) => {
-    const baseStyles =
-      'w-full px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    const baseStyles = 'w-full px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
 
-    const variants = {
-      primary: 'bg-[#f5b229] text-black hover:bg-[#d99a1f] focus:ring-[#f5b229]',
-      secondary: 'bg-[#3a3a3a] text-white hover:bg-[#4a4a4a] focus:ring-[#404040] border border-[#404040]',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+    const getVariantStyles = () => {
+      switch (variant) {
+        case 'primary':
+          return { background: 'var(--foreground)', color: 'var(--background)' };
+        case 'secondary':
+          return { background: 'var(--surface-light)', color: 'var(--foreground)', border: '1px solid var(--border)' };
+        case 'danger':
+          return { background: 'var(--danger)', color: 'white' };
+        default:
+          return { background: 'var(--foreground)', color: 'var(--background)' };
+      }
     };
 
     return (
       <button
         ref={ref}
-        className={`${baseStyles} ${variants[variant]} ${className}`}
+        className={`${baseStyles} ${className}`}
+        style={getVariantStyles()}
         disabled={disabled || isLoading}
         {...props}
       >

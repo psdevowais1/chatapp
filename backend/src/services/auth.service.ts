@@ -26,6 +26,7 @@ export const registerUser = async (email: string, password: string, name: string
       email: true,
       name: true,
       profilePhoto: true,
+      role: true,
       createdAt: true,
     },
   });
@@ -58,6 +59,7 @@ export const loginUser = async (email: string, password: string) => {
       email: user.email,
       name: user.name,
       profilePhoto: user.profilePhoto,
+      role: user.role,
       createdAt: user.createdAt,
     },
     token,
@@ -72,6 +74,7 @@ export const getUserById = async (userId: string) => {
       email: true,
       name: true,
       profilePhoto: true,
+      role: true,
       createdAt: true,
     },
   });

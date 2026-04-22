@@ -17,6 +17,60 @@ interface MessageData {
 
 let io: SocketIOServer;
 
+// Helper to get conversation data for a user
+const getConversationForUser = async (conversationId: string, userId: string) => {
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+    include: {
+      participants: {
+        select: { id: true, name: true, email: true, profilePhoto: true },
+      },
+      messages: {
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: {
+          id: true,
+          content: true,
+          senderId: true,
+          receiverId: true,
+          conversationId: true,
+          createdAt: true,
+          attachmentUrl: true,
+          attachmentName: true,
+          attachmentType: true,
+          attachmentSize: true,
+          status: true,
+          readAt: true,
+          sender: {
+            select: { id: true, name: true, email: true, profilePhoto: true },
+          },
+        },
+      },
+      groupMembers: {
+        where: { userId },
+        select: { unreadCount: true },
+      },
+    },
+  });
+
+  if (!conversation) return null;
+
+  let unreadCount = 0;
+  if (conversation.isGroup) {
+    unreadCount = conversation.groupMembers[0]?.unreadCount || 0;
+  } else {
+    unreadCount = await prisma.message.count({
+      where: {
+        conversationId: conversation.id,
+        receiverId: userId,
+        status: { not: 'read' },
+      },
+    });
+  }
+
+  return { ...conversation, unreadCount };
+};
+
 export const initSocket = (server: HttpServer): SocketIOServer => {
   io = new SocketIOServer(server, {
     cors: {
@@ -102,13 +156,14 @@ export const initSocket = (server: HttpServer): SocketIOServer => {
         });
 
         // Emit to sender with sent status
-        io.to(data.senderId).emit('receive_message', message);
+        const senderConversation = await getConversationForUser(data.conversationId, data.senderId);
+        io.to(data.senderId).emit('receive_message', { message, conversation: senderConversation });
 
         if (isGroup) {
           // For group messages, emit to all participants except sender
           // and increment their unread count
           const participants = conversation?.participants || [];
-          
+
           for (const participant of participants) {
             if (participant.id !== data.senderId) {
               // Increment unread count for this participant
@@ -123,15 +178,17 @@ export const initSocket = (server: HttpServer): SocketIOServer => {
                   unreadCount: { increment: 1 },
                 },
               });
-              
-              // Emit to participant
-              io.to(participant.id).emit('receive_message', { ...message, status: 'delivered' });
+
+              // Get conversation with updated unread count
+              const participantConversation = await getConversationForUser(data.conversationId, participant.id);
+              // Emit to participant with conversation data
+              io.to(participant.id).emit('receive_message', {
+                message: { ...message, status: 'delivered' },
+                conversation: participantConversation
+              });
             }
           }
-          
-          // Also emit to conversation room
-          io.to(data.conversationId).emit('receive_message', { ...message, status: 'delivered' });
-          
+
           // Notify sender of delivery
           io.to(data.senderId).emit('message_delivered', {
             messageId: message.id,
@@ -146,9 +203,12 @@ export const initSocket = (server: HttpServer): SocketIOServer => {
 
           const deliveredMessage = { ...message, status: 'delivered' };
           if (data.receiverId) {
-            io.to(data.receiverId).emit('receive_message', deliveredMessage);
+            const receiverConversation = await getConversationForUser(data.conversationId, data.receiverId);
+            io.to(data.receiverId).emit('receive_message', {
+              message: deliveredMessage,
+              conversation: receiverConversation
+            });
           }
-          io.to(data.conversationId).emit('receive_message', deliveredMessage);
 
           io.to(data.senderId).emit('message_delivered', {
             messageId: message.id,

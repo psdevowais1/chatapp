@@ -57,7 +57,7 @@ export const sendMessage = (
   });
 };
 
-export const onReceiveMessage = (callback: (message: Message) => void): void => {
+export const onReceiveMessage = (callback: (data: { message: Message; conversation?: any } | Message) => void): void => {
   socket?.on('receive_message', callback);
 };
 

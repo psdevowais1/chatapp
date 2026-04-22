@@ -116,47 +116,50 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#2a2a2a] rounded-lg w-full max-w-md p-6 border border-[#404040]">
+    <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
+      <div className="rounded-lg w-full max-w-md p-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">Create Group</h2>
+          <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>Create Group</h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-[#3a3a3a] rounded-lg transition-colors"
+            className="p-1 rounded-lg transition-colors"
+            style={{ background: 'var(--surface-light)' }}
           >
-            <X className="w-5 h-5 text-[#a0a0a0]" />
+            <X className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-900/30 border border-red-700 rounded-lg">
-            <p className="text-sm text-red-400">{error}</p>
+          <div className="mb-4 p-3 rounded-lg" style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid var(--danger)' }}>
+            <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>
           </div>
         )}
 
         {nonExistentUser && (
-          <div className="mb-4 p-3 bg-orange-900/30 border border-orange-700 rounded-lg">
+          <div className="mb-4 p-3 rounded-lg" style={{ background: 'rgba(249, 115, 22, 0.2)', border: '1px solid #f97316' }}>
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#f97316' }} />
               <div className="flex-1">
-                <p className="text-sm text-orange-400">
+                <p className="text-sm" style={{ color: '#f97316' }}>
                   User with email <strong>"{nonExistentUser.email}"</strong> does not exist.
                 </p>
-                <p className="text-xs text-orange-300 mt-1">
+                <p className="text-xs mt-1" style={{ color: '#fdba74' }}>
                   Ask them to register or add a different email.
                 </p>
                 <div className="flex gap-2 mt-3">
                   <button
                     type="button"
                     onClick={handleTryAnotherEmail}
-                    className="px-3 py-1.5 bg-[#3a3a3a] text-white text-sm rounded-lg hover:bg-[#4a4a4a] transition-colors"
+                    className="px-3 py-1.5 text-sm rounded-lg transition-colors"
+                    style={{ background: 'var(--surface-light)', color: 'var(--foreground)' }}
                   >
                     Try another
                   </button>
                   <button
                     type="button"
                     onClick={handleRemoveNonExistentUser}
-                    className="px-3 py-1.5 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors"
+                    className="px-3 py-1.5 text-sm rounded-lg transition-colors"
+                    style={{ background: '#ea580c', color: 'white' }}
                   >
                     Remove this
                   </button>
@@ -168,7 +171,7 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#a0a0a0] mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-muted)' }}>
               Group Name
             </label>
             <input
@@ -176,12 +179,13 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
               placeholder="Enter group name"
-              className="w-full px-3 py-2 border border-[#404040] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f5b229] text-white bg-[#3a3a3a]"
+              className="w-full px-3 py-2 rounded-lg focus:outline-none"
+              style={{ border: '1px solid var(--border)', background: 'var(--surface-light)', color: 'var(--foreground)' }}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#a0a0a0] mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-muted)' }}>
               Add Members (by email)
             </label>
             <div className="flex gap-2">
@@ -192,16 +196,18 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                 onKeyDown={(e) => e.key === 'Enter' && !isCheckingUser && !nonExistentUser && (e.preventDefault(), handleAddEmail())}
                 placeholder={nonExistentUser ? 'Clear the error above first' : 'Enter email address'}
                 disabled={isCheckingUser || !!nonExistentUser}
-                className="flex-1 px-3 py-2 border border-[#404040] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f5b229] text-white bg-[#3a3a3a] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-3 py-2 rounded-lg focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ border: '1px solid #000', background: '#fff', color: '#000' }}
               />
               <button
                 type="button"
                 onClick={handleAddEmail}
                 disabled={isCheckingUser || !emailInput.trim() || !!nonExistentUser}
-                className="px-3 py-2 bg-[#f5b229] text-black rounded-lg hover:bg-[#d99a1f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                style={{ background: '#000', color: '#fff' }}
               >
                 {isCheckingUser ? (
-                  <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
                 ) : (
                   <Plus className="w-5 h-5" />
                 )}
@@ -214,13 +220,14 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
               {members.map((email) => (
                 <div
                   key={email}
-                  className="flex items-center gap-1 px-2 py-1 bg-[#3a3a3a] rounded-full"
+                  className="flex items-center gap-1 px-2 py-1 rounded-full"
+                  style={{ background: 'var(--surface-light)' }}
                 >
-                  <span className="text-sm text-white">{email}</span>
+                  <span className="text-sm" style={{ color: 'var(--foreground)' }}>{email}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveEmail(email)}
-                    className="text-[#a0a0a0] hover:text-white"
+                    style={{ color: 'var(--text-muted)' }}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -233,7 +240,8 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
             type="button"
             onClick={handleCreateGroup}
             disabled={isLoading}
-            className="w-full py-2 bg-[#f5b229] text-black rounded-lg hover:bg-[#d99a1f] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2 rounded-lg disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+            style={{ background: 'var(--foreground)', color: 'var(--background)' }}
           >
             <Users className="w-4 h-4" />
             {isLoading ? 'Creating...' : 'Create Group'}

@@ -179,38 +179,39 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#2a2a2a] rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto border border-[#404040]">
-        <div className="sticky top-0 bg-[#2a2a2a] p-4 border-b border-[#404040] z-10">
+    <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
+      <div className="rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="sticky top-0 p-4 z-10" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">{isCreator ? 'Group Settings' : 'Group Info'}</h2>
+            <h2 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>{isCreator ? 'Group Settings' : 'Group Info'}</h2>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-[#3a3a3a] rounded-lg transition-colors"
+              className="p-1 rounded-lg transition-colors"
+              style={{ background: 'var(--surface-light)' }}
             >
-              <X className="w-5 h-5 text-[#a0a0a0]" />
+              <X className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
             </button>
           </div>
         </div>
 
         <div className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-900/30 border border-red-700 rounded-lg">
-              <p className="text-sm text-red-400">{error}</p>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid var(--danger)' }}>
+              <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>
             </div>
           )}
 
           {success && (
-            <div className="p-3 bg-green-900/30 border border-green-700 rounded-lg flex items-center gap-2">
-              <Check className="w-4 h-4 text-green-400" />
-              <p className="text-sm text-green-400">{success}</p>
+            <div className="p-3 rounded-lg flex items-center gap-2" style={{ background: 'rgba(34, 197, 94, 0.2)', border: '1px solid var(--success)' }}>
+              <Check className="w-4 h-4" style={{ color: 'var(--success)' }} />
+              <p className="text-sm" style={{ color: 'var(--success)' }}>{success}</p>
             </div>
           )}
 
           {/* Group Photo */}
           <div className="flex flex-col items-center gap-3">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-[#3a3a3a] flex items-center justify-center overflow-hidden">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface-light)' }}>
                 {conversation.groupPhoto ? (
                   <img
                     src={`http://localhost:5000${conversation.groupPhoto}`}
@@ -218,7 +219,7 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-3xl font-bold text-[#f5b229]">
+                  <span className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>
                     {conversation.groupName?.charAt(0).toUpperCase() || 'G'}
                   </span>
                 )}
@@ -226,9 +227,10 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
               {isCreator && (
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute bottom-0 right-0 p-2 bg-[#f5b229] rounded-full hover:bg-[#d99a1f] transition-colors"
+                  className="absolute bottom-0 right-0 p-2 rounded-full transition-colors"
+                  style={{ background: 'var(--foreground)', color: 'var(--background)' }}
                 >
-                  <Camera className="w-4 h-4 text-black" />
+                  <Camera className="w-4 h-4" />
                 </button>
               )}
               <input
@@ -243,7 +245,7 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
 
           {/* Group Name */}
           <div>
-            <label className="block text-sm font-medium text-[#a0a0a0] mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-muted)' }}>
               Group Name
             </label>
             {isEditingName && isCreator ? (
@@ -252,24 +254,23 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
                   type="text"
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-[#404040] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f5b229] text-white bg-[#3a3a3a]"
+                  className="flex-1 px-3 py-2 rounded-lg focus:outline-none"
+                  style={{ border: '1px solid var(--border)', background: 'var(--surface-light)', color: 'var(--foreground)' }}
                 />
                 <button
                   onClick={handleUpdateName}
                   disabled={isLoading}
-                  className="px-3 py-2 bg-[#f5b229] text-black rounded-lg hover:bg-[#d99a1f] disabled:opacity-50"
+                  className="px-3 py-2 rounded-lg disabled:opacity-50"
+                  style={{ background: 'var(--foreground)', color: 'var(--background)' }}
                 >
                   <Check className="w-5 h-5" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center justify-between px-3 py-2 bg-[#3a3a3a] rounded-lg">
-                <span className="text-white">{groupName}</span>
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'var(--surface-light)' }}>
+                <span style={{ color: 'var(--foreground)' }}>{groupName}</span>
                 {isCreator && (
-                  <button
-                    onClick={() => setIsEditingName(true)}
-                    className="text-[#a0a0a0] hover:text-white"
-                  >
+                  <button style={{ color: 'var(--text-muted)' }}>
                     <Edit className="w-4 h-4" />
                   </button>
                 )}
@@ -279,17 +280,18 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
 
           {/* Members List */}
           <div>
-            <label className="block text-sm font-medium text-[#a0a0a0] mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
               Members ({members.length})
             </label>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {members.map((member) => (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between px-3 py-2 bg-[#3a3a3a] rounded-lg"
+                  className="flex items-center justify-between px-3 py-2 rounded-lg"
+                  style={{ background: 'var(--surface-light)' }}
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-[#4a4a4a] flex items-center justify-center overflow-hidden">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)' }}>
                       {member.profilePhoto ? (
                         <img
                           src={`http://localhost:5000${member.profilePhoto}`}
@@ -297,17 +299,17 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-xs text-[#a0a0a0]">
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                           {member.name.charAt(0).toUpperCase()}
                         </span>
                       )}
                     </div>
                     <div>
-                      <p className="text-sm text-white">{member.name}</p>
-                      <p className="text-xs text-[#a0a0a0]">{member.email}</p>
+                      <p className="text-sm" style={{ color: 'var(--foreground)' }}>{member.name}</p>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{member.email}</p>
                     </div>
                     {member.id === conversation.creatorId && (
-                      <span className="text-xs px-2 py-0.5 bg-[#f5b229]/20 text-[#f5b229] rounded">
+                      <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--surface-light)', color: 'var(--foreground)' }}>
                         Admin
                       </span>
                     )}
@@ -315,7 +317,8 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
                   {isCreator && member.id !== user?.id && (
                     <button
                       onClick={() => setShowRemoveMember(member.id)}
-                      className="p-1 text-red-400 hover:bg-red-900/30 rounded"
+                      className="p-1 rounded"
+                      style={{ color: 'var(--danger)' }}
                     >
                       <UserMinus className="w-4 h-4" />
                     </button>
@@ -328,7 +331,7 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
           {/* Add Member (Creator Only) */}
           {isCreator && (
             <div>
-              <label className="block text-sm font-medium text-[#a0a0a0] mb-1">
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-muted)' }}>
                 Add Member
               </label>
               <div className="flex gap-2">
@@ -339,15 +342,17 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
                   onKeyDown={(e) => e.key === 'Enter' && !isCheckingUser && (e.preventDefault(), handleAddMember())}
                   placeholder="Enter email address"
                   disabled={isCheckingUser}
-                  className="flex-1 px-3 py-2 border border-[#404040] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f5b229] text-white bg-[#3a3a3a] disabled:opacity-50"
+                  className="flex-1 px-3 py-2 rounded-lg focus:outline-none disabled:opacity-50"
+                  style={{ border: '1px solid var(--border)', background: 'var(--surface-light)', color: 'var(--foreground)' }}
                 />
                 <button
                   onClick={handleAddMember}
                   disabled={isCheckingUser || !emailInput.trim()}
-                  className="px-3 py-2 bg-[#f5b229] text-black rounded-lg hover:bg-[#d99a1f] disabled:opacity-50"
+                  className="px-3 py-2 rounded-lg disabled:opacity-50"
+                  style={{ background: 'var(--foreground)', color: 'var(--background)' }}
                 >
                   {isCheckingUser ? (
-                    <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
                   ) : (
                     <UserPlus className="w-5 h-5" />
                   )}
@@ -357,11 +362,12 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
           )}
 
           {/* Delete/Leave Group */}
-          <div className="pt-4 border-t border-[#404040]">
+          <div className="pt-4" style={{ borderTop: '1px solid var(--border)' }}>
             {isCreator ? (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="w-full py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+                style={{ background: 'var(--danger)', color: 'white' }}
               >
                 <Trash2 className="w-4 h-4" />
                 Delete Group
@@ -370,7 +376,8 @@ export default function GroupSettingsModal({ isOpen, onClose, conversation }: Gr
               <button
                 onClick={handleLeaveGroup}
                 disabled={isLoading}
-                className="w-full py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-2 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                style={{ background: 'var(--danger)', color: 'white' }}
               >
                 <UserMinus className="w-4 h-4" />
                 Leave Group

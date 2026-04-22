@@ -59,8 +59,8 @@ export default function ChatContent() {
 
   if (!_hasHydrated || authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#1a1a1a]">
-        <div className="text-[#a0a0a0]">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
+        <div style={{ color: 'var(--text-muted)' }}>Loading...</div>
       </div>
     );
   }
@@ -70,7 +70,7 @@ export default function ChatContent() {
   }
 
   return (
-    <div className="h-screen flex bg-[#1a1a1a]">
+    <div className="h-screen flex" style={{ background: 'var(--background)' }}>
       <div className={`lg:block ${showMobileList ? 'block' : 'hidden'}`}>
         <ConversationList 
           onSelectConversation={handleSelectConversation} 

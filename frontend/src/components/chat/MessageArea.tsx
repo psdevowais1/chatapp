@@ -12,21 +12,12 @@ import CreateGroupModal from '../group/CreateGroupModal';
 import GroupSettingsModal from '../group/GroupSettingsModal';
 import NewChatModal from './NewChatModal';
 import {
-  initSocket,
   joinConversation,
   leaveConversation,
-  onReceiveMessage,
-  offReceiveMessage,
   sendMessage as socketSendMessage,
   emitTypingStart,
   emitTypingStop,
-  onUserTyping,
-  offUserTyping,
   markMessagesRead,
-  onMessageDelivered,
-  offMessageDelivered,
-  onMessagesRead,
-  offMessagesRead,
 } from '../../lib/socket';
 
 interface MessageAreaProps {
@@ -62,78 +53,29 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
   const isGroupCreator = isGroup && conversation?.creatorId === user?.id;
 
   useEffect(() => {
-    if (user && !messages.length) {
-      initSocket(user.id);
-    }
-  }, [user]);
-
-  useEffect(() => {
     if (conversation) {
       fetchMessages(conversation.id);
       joinConversation(conversation.id);
-
-      onReceiveMessage((message: Message) => {
-        if (message.conversationId === conversation.id) {
-          // Mark message as read immediately since conversation is open
-          const readMessage = { ...message, status: 'read' };
-          addMessage(readMessage);
-          // Notify server that message was read
-          if (user) {
-            markMessagesRead(conversation.id, user.id);
-          }
-        }
-      });
-
-      onUserTyping(({ userId, typing }) => {
-        setTyping(userId, typing);
-      });
     }
 
     return () => {
       if (conversation) {
         leaveConversation(conversation.id);
-        offReceiveMessage();
-        offUserTyping();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversation?.id, user?.id]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [conversation?.id, fetchMessages]);
 
   // Mark messages as read when opening conversation
   useEffect(() => {
     if (conversation && user) {
-      // Small delay to ensure messages are loaded first
-      const timer = setTimeout(() => {
-        markMessagesRead(conversation.id, user.id);
-        decrementUnreadCount(conversation.id);
-      }, 100);
-      return () => clearTimeout(timer);
+      markMessagesRead(conversation.id, user.id);
+      decrementUnreadCount(conversation.id);
     }
-  }, [conversation, user, decrementUnreadCount]);
+  }, [conversation, user, markMessagesRead, decrementUnreadCount]);
 
-  // Handle message delivered and read receipts
   useEffect(() => {
-    const handleDelivered = (data: { messageId: string; conversationId: string }) => {
-      updateMessageStatus(data.messageId, 'delivered');
-    };
-
-    const handleRead = (data: { conversationId: string; readBy: string; readAt: string }) => {
-      // Update all messages in this conversation to read status
-      markConversationRead(data.conversationId);
-    };
-
-    onMessageDelivered(handleDelivered);
-    onMessagesRead(handleRead);
-
-    return () => {
-      offMessageDelivered();
-      offMessagesRead();
-    };
-  }, [updateMessageStatus, markConversationRead]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const getMessageStatus = (message: Message) => {
     if (message.senderId !== user?.id) return null;
@@ -342,35 +284,37 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-[#1a1a1a] h-full">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-white mb-4">Start a Conversation</h2>
-          <p className="text-[#a0a0a0] mb-6">Choose an option to get started</p>
+      <div className="flex-1 flex items-center justify-center h-full p-3" style={{ background: 'var(--background)' }}>
+        <div className="text-center p-8 rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--foreground)' }}>Start a Conversation</h2>
+          <p className="mb-6" style={{ color: 'var(--text-muted)' }}>Choose an option to get started</p>
           <div className="flex gap-4 justify-center">
             <button
               onClick={() => setShowNewChat(true)}
-              className="flex flex-col items-center gap-2 p-6 bg-[#2a2a2a] border border-[#404040] rounded-lg hover:bg-[#3a3a3a] transition-colors"
+              className="flex flex-col items-center gap-2 p-6 rounded-xl transition-colors hover:opacity-80"
+              style={{ background: 'var(--surface-light)', border: '1px solid var(--border)' }}
             >
-              <User className="w-8 h-8 text-[#f5b229]" />
-              <span className="text-white font-medium">New Chat</span>
-              <span className="text-xs text-[#a0a0a0]">Start 1-on-1 conversation</span>
+              <User className="w-8 h-8" style={{ color: 'var(--foreground)' }} />
+              <span className="font-medium" style={{ color: 'var(--foreground)' }}>New Chat</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Start 1-on-1 conversation</span>
             </button>
             <button
               onClick={() => setShowCreateGroup(true)}
-              className="flex flex-col items-center gap-2 p-6 bg-[#2a2a2a] border border-[#404040] rounded-lg hover:bg-[#3a3a3a] transition-colors"
+              className="flex flex-col items-center gap-2 p-6 rounded-xl transition-colors hover:opacity-80"
+              style={{ background: 'var(--surface-light)', border: '1px solid var(--border)' }}
             >
-              <Users className="w-8 h-8 text-[#f5b229]" />
-              <span className="text-white font-medium">Create Group</span>
-              <span className="text-xs text-[#a0a0a0]">Group conversation</span>
+              <Users className="w-8 h-8" style={{ color: 'var(--foreground)' }} />
+              <span className="font-medium" style={{ color: 'var(--foreground)' }}>Create Group</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Group conversation</span>
             </button>
           </div>
         </div>
-        
-        <CreateGroupModal 
-          isOpen={showCreateGroup} 
-          onClose={() => setShowCreateGroup(false)} 
+
+        <CreateGroupModal
+          isOpen={showCreateGroup}
+          onClose={() => setShowCreateGroup(false)}
         />
-        
+
         <NewChatModal
           isOpen={showNewChat}
           onClose={() => setShowNewChat(false)}
@@ -380,20 +324,23 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#1a1a1a]">
-      <div className="p-4 bg-[#2a2a2a] border-b border-[#404040] flex items-center gap-4">
+    <div className="flex-1 flex flex-col h-full p-3" style={{ background: 'var(--background)' }}>
+      {/* Header with rounded corners */}
+      <div className="rounded-xl p-4 flex items-center gap-4 mb-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <button
           onClick={onBack}
-          className="p-2 hover:bg-[#3a3a3a] rounded-lg transition-colors lg:hidden"
+          className="p-2 rounded-lg transition-colors lg:hidden"
+          style={{ background: 'var(--surface-light)' }}
         >
-          <ArrowLeft className="w-5 h-5 text-white" />
+          <ArrowLeft className="w-5 h-5" style={{ color: 'var(--foreground)' }} />
         </button>
         {isGroup ? (
           <button
             onClick={() => setShowGroupSettings(true)}
-            className="flex-1 flex items-center gap-3 hover:bg-[#3a3a3a] p-2 -m-2 rounded-lg transition-colors"
+            className="flex-1 flex items-center gap-3 p-2 -m-2 rounded-xl transition-colors"
+            style={{ background: 'transparent' }}
           >
-            <div className="w-10 h-10 rounded-full bg-[#4a4a4a] flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0" style={{ background: 'var(--surface-light)', border: '1px solid var(--border)' }}>
               {conversation.groupPhoto ? (
                 <img
                   src={`http://localhost:5000${conversation.groupPhoto}`}
@@ -401,28 +348,31 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="text-sm font-semibold text-[#f5b229]">
+                <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
                   {conversation.groupName?.charAt(0).toUpperCase() || 'G'}
                 </span>
               )}
             </div>
             <div className="text-left">
-              <h2 className="font-semibold text-white">{conversation.groupName}</h2>
-              <p className="text-sm text-[#a0a0a0]">{conversation.participants.length} members</p>
+              <h2 className="font-semibold text-base" style={{ color: 'var(--foreground)' }}>{conversation.groupName}</h2>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{conversation.participants.length} members</p>
             </div>
           </button>
         ) : (
           <div className="flex-1 flex items-center gap-3">
-            <Avatar user={otherUser} size="md" />
+            <div className="w-11 h-11 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+              <Avatar user={otherUser} size="md" />
+            </div>
             <div>
-              <h2 className="font-semibold text-white">{otherUser?.name}</h2>
-              <p className="text-sm text-[#a0a0a0]">{otherUser?.email}</p>
+              <h2 className="font-semibold text-base" style={{ color: 'var(--foreground)' }}>{otherUser?.name}</h2>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{otherUser?.email}</p>
             </div>
           </div>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Messages Area with rounded styling */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         {messages.map((message) => {
           const isOwn = message.senderId === user?.id;
 
@@ -430,12 +380,15 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
             <div key={message.id} className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}>
               {!isOwn && <Avatar user={message.sender} size="sm" />}
               <div
-                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                  isOwn ? 'bg-[#3a3a3a] text-white' : 'bg-[#2a2a2a] text-white border border-[#404040]'
-                }`}
+                className="max-w-xs lg:max-w-md px-4 py-2 rounded-2xl"
+                style={{
+                  background: isOwn ? 'var(--surface-light)' : 'var(--surface-light)',
+                  color: 'var(--foreground)',
+                  border: '1px solid var(--border)'
+                }}
               >
                 {isGroup && !isOwn && (
-                  <p className="text-xs font-semibold text-[#f5b229] mb-1">{message.sender?.name}</p>
+                  <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>{message.sender?.name}</p>
                 )}
                 {message.attachmentUrl && (
                   <div className="mb-2">
@@ -462,15 +415,14 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
                         href={`${process.env.NEXT_PUBLIC_SOCKET_URL}${message.attachmentUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`flex items-center gap-2 p-2 rounded-lg ${
-                          isOwn ? 'bg-[#4a4a4a]' : 'bg-[#3a3a3a]'
-                        }`}
+                        className="flex items-center gap-2 p-2 rounded-lg"
+                        style={{ background: 'var(--surface-light)' }}
                       >
                         {getFileIcon(message.attachmentType)}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{message.attachmentName}</p>
+                          <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{message.attachmentName}</p>
                           {message.attachmentSize && (
-                            <p className={`text-xs text-[#a0a0a0]`}>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                               {formatFileSize(message.attachmentSize)}
                             </p>
                           )}
@@ -480,10 +432,8 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
                   </div>
                 )}
                 {message.content && !isAudio(message.attachmentType) && <p>{message.content}</p>}
-                <div className={`flex items-center gap-1 justify-end mt-1 ${isOwn ? '' : ''}`}>
-                  <p
-                    className={`text-xs text-[#a0a0a0]`}
-                  >
+                <div className="flex items-center gap-1 justify-end mt-1">
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                     {formatTime(message.createdAt)}
                   </p>
                   {isOwn && getMessageStatus(message)}
@@ -495,7 +445,7 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
         })}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-[#2a2a2a] text-[#a0a0a0] px-4 py-2 rounded-lg border border-[#404040]">
+            <div className="px-4 py-2 rounded-2xl" style={{ background: 'var(--surface-light)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
               <span className="animate-pulse">typing...</span>
             </div>
           </div>
@@ -503,32 +453,34 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSendMessage} className="p-4 bg-[#2a2a2a] border-t border-[#404040]">
+      {/* Input Form with rounded styling */}
+      <form onSubmit={handleSendMessage} className="p-4 rounded-xl mt-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         {selectedFile && (
-          <div className="mb-2 p-2 bg-[#3a3a3a] rounded-lg flex items-center gap-2">
+          <div className="mb-2 p-2 rounded-lg flex items-center gap-2" style={{ background: 'var(--surface-light)' }}>
             {getFileIcon(selectedFile.type)}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{selectedFile.name}</p>
-              <p className="text-xs text-[#a0a0a0]">{formatFileSize(selectedFile.size)}</p>
+              <p className="text-sm font-medium truncate" style={{ color: 'var(--foreground)' }}>{selectedFile.name}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatFileSize(selectedFile.size)}</p>
             </div>
             <button
               type="button"
               onClick={() => setSelectedFile(null)}
-              className="p-1 hover:bg-[#4a4a4a] rounded"
+              className="p-1 rounded"
+              style={{ background: 'var(--surface)' }}
             >
-              <X className="w-4 h-4 text-[#a0a0a0]" />
+              <X className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
             </button>
           </div>
         )}
-        
+
         {isRecording && (
-          <div className="mb-3 p-3 bg-[#3a3a3a] rounded-2xl">
+          <div className="mb-3 p-3 rounded-2xl" style={{ background: 'var(--surface-light)' }}>
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-12 h-12 bg-[#f5b229] rounded-full flex items-center justify-center">
-                  <Mic className="w-5 h-5 text-black" />
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'var(--foreground)' }}>
+                  <Mic className="w-5 h-5" style={{ color: 'var(--background)' }} />
                 </div>
-                <div className="absolute inset-0 bg-[#f5b229] rounded-full animate-ping opacity-30" />
+                <div className="absolute inset-0 rounded-full animate-ping opacity-30" style={{ background: 'var(--foreground)' }} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
@@ -536,8 +488,9 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
                     {[...Array(20)].map((_, i) => (
                       <div
                         key={i}
-                        className="w-1 bg-[#f5b229] rounded-full animate-pulse"
+                        className="w-1 rounded-full animate-pulse"
                         style={{
+                          background: 'var(--foreground)',
                           height: `${Math.random() * 16 + 8}px`,
                           animationDelay: `${i * 50}ms`,
                           animationDuration: '300ms',
@@ -546,14 +499,15 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
                     ))}
                   </div>
                 </div>
-                <p className="text-sm text-white mt-1 font-medium">
+                <p className="text-sm mt-1 font-medium" style={{ color: 'var(--foreground)' }}>
                   {formatRecordingTime(recordingTime)}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={stopRecording}
-                className="px-4 py-2 bg-[#f5b229] text-black text-sm font-medium rounded-full hover:bg-[#d99a1f] transition-colors flex items-center gap-2"
+                className="px-4 py-2 text-sm font-medium rounded-full transition-colors flex items-center gap-2"
+                style={{ background: 'var(--foreground)', color: 'var(--background)' }}
               >
                 <Send className="w-4 h-4" />
                 Send
@@ -561,7 +515,7 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
             </div>
           </div>
         )}
-        
+
         <div className="flex gap-2">
           <input
             type="file"
@@ -572,7 +526,8 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="p-2 text-[#a0a0a0] hover:bg-[#3a3a3a] rounded-lg transition-colors"
+            className="p-2 rounded-xl transition-colors"
+            style={{ color: 'var(--text-muted)', background: 'var(--surface-light)' }}
             title="Attach file"
             disabled={isRecording}
           >
@@ -586,18 +541,23 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
               handleTyping();
             }}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-2 border border-[#404040] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f5b229] text-white bg-[#3a3a3a]"
+            className="flex-1 px-4 py-2 rounded-xl focus:outline-none"
+            style={{
+              border: '1px solid var(--border)',
+              background: 'var(--surface-light)',
+              color: 'var(--foreground)'
+            }}
             disabled={isLoading || uploadingFile || isRecording}
           />
           <button
             type="button"
             onClick={isRecording ? stopRecording : startRecording}
             disabled={isLoading || uploadingFile}
-            className={`p-2 rounded-lg transition-colors ${
-              isRecording 
-                ? 'bg-[#f5b229] text-black hover:bg-[#d99a1f]' 
-                : 'text-[#a0a0a0] hover:bg-[#3a3a3a]'
-            }`}
+            className="p-2 rounded-xl transition-colors"
+            style={{
+              background: 'var(--surface-light)',
+              color: 'var(--text-muted)'
+            }}
             title={isRecording ? 'Stop recording' : 'Record voice message'}
           >
             {isRecording ? <Square className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
@@ -605,7 +565,8 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
           <button
             type="submit"
             disabled={isLoading || uploadingFile || isRecording || (!newMessage.trim() && !selectedFile)}
-            className="px-4 py-2 bg-[#f5b229] text-black rounded-lg hover:bg-[#d99a1f] disabled:opacity-50 transition-colors"
+            className="px-4 py-2 rounded-xl disabled:opacity-50 transition-colors"
+            style={{ background: 'var(--foreground)', color: 'var(--background)' }}
           >
             {uploadingFile ? (
               <span className="text-sm">Uploading...</span>
@@ -627,18 +588,18 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
 
       {/* Delete Group Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[#2a2a2a] rounded-lg w-full max-w-sm p-6 border border-[#404040]">
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
+          <div className="rounded-lg w-full max-w-sm p-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-900/30 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-red-400" />
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(239, 68, 68, 0.2)' }}>
+                <AlertTriangle className="w-5 h-5" style={{ color: 'var(--danger)' }} />
               </div>
-              <h2 className="text-lg font-bold text-white">Delete Group</h2>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>Delete Group</h2>
             </div>
-            <p className="text-[#a0a0a0] mb-2">
-              Are you sure you want to delete <strong className="text-white">{conversation.groupName}</strong>?
+            <p className="mb-2" style={{ color: 'var(--text-muted)' }}>
+              Are you sure you want to delete <strong style={{ color: 'var(--foreground)' }}>{conversation.groupName}</strong>?
             </p>
-            <p className="text-sm text-red-400 mb-6">
+            <p className="text-sm mb-6" style={{ color: 'var(--danger)' }}>
               This action cannot be undone. All messages will be permanently deleted.
             </p>
             <div className="flex gap-3">
@@ -646,7 +607,8 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
                 type="button"
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isDeleting}
-                className="flex-1 py-2 bg-[#3a3a3a] text-white rounded-lg hover:bg-[#4a4a4a] disabled:opacity-50 transition-colors"
+                className="flex-1 py-2 rounded-lg disabled:opacity-50 transition-colors"
+                style={{ background: 'var(--surface-light)', color: 'var(--foreground)' }}
               >
                 Cancel
               </button>
@@ -654,7 +616,8 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
                 type="button"
                 onClick={handleDeleteGroup}
                 disabled={isDeleting}
-                className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-2 rounded-lg disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                style={{ background: 'var(--danger)', color: 'white' }}
               >
                 {isDeleting ? (
                   <>

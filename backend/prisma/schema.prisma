@@ -13,6 +13,7 @@ model User {
   password     String
   name         String
   profilePhoto String?
+  role         String   @default("USER") // USER, SUPERUSER
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -22,6 +23,7 @@ model User {
   groupMemberships GroupMember[]
 
   @@index([email])
+  @@index([role])
 }
 
 model Conversation {

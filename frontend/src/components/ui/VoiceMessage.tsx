@@ -92,22 +92,23 @@ export default function VoiceMessage({ url, duration, isOwn }: VoiceMessageProps
   return (
     <div className={`flex items-center gap-3 min-w-[200px] max-w-[280px] p-2`}>
       <audio ref={audioRef} src={url} preload="metadata" />
-      
+
       {/* Play/Pause Button */}
       <button
         onClick={togglePlay}
-        className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all bg-[#f5b229] hover:bg-[#d99a1f]"
+        className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all"
+        style={{ background: 'var(--foreground)', color: 'var(--background)' }}
       >
         {isPlaying ? (
-          <Pause className="w-4 h-4 text-black" />
+          <Pause className="w-4 h-4" />
         ) : (
-          <Play className="w-4 h-4 ml-0.5 text-black" />
+          <Play className="w-4 h-4 ml-0.5" />
         )}
       </button>
 
       {/* Waveform & Progress */}
       <div className="flex-1 min-w-0">
-        <div 
+        <div
           className="relative h-8 flex items-center gap-0.5 cursor-pointer group"
           onClick={handleSeek}
         >
@@ -116,25 +117,24 @@ export default function VoiceMessage({ url, duration, isOwn }: VoiceMessageProps
             {waveform.map((height, index) => {
               const barProgress = (index / waveform.length) * 100;
               const isActive = barProgress < progress;
-              
+
               return (
                 <div
                   key={index}
-                  className={`flex-1 rounded-full transition-all ${
-                    isActive ? 'bg-[#f5b229]' : 'bg-[#a0a0a0]'
-                  }`}
-                  style={{ 
+                  className="flex-1 rounded-full transition-all"
+                  style={{
                     height: `${height * 100}%`,
-                    minHeight: '4px'
+                    minHeight: '4px',
+                    background: isActive ? 'var(--foreground)' : 'var(--text-muted)'
                   }}
                 />
               );
             })}
           </div>
         </div>
-        
+
         {/* Duration */}
-        <div className="text-xs mt-1 text-[#a0a0a0]">
+        <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
           {isPlaying ? formatTime(currentTime) : formatTime(audioDuration)}
         </div>
       </div>

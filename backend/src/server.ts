@@ -10,6 +10,7 @@ import userRoutes from './routes/user.routes.js';
 import chatRoutes from './routes/chat.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import groupRoutes from './routes/group.routes.js';
+import superuserRoutes from './routes/superuser.routes.js';
 import { initSocket } from './config/socket.js';
 
 dotenv.config();
@@ -43,6 +44,7 @@ app.use('/api/users', userRoutes);
 app.use('/api', chatRoutes);
 app.use('/api', uploadRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/superuser', superuserRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });

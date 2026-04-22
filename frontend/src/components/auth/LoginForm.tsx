@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useAuthStore } from '../../store/authStore';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
@@ -26,17 +25,17 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#1a1a1a]">
-      <div className="max-w-md w-full space-y-8 p-8 bg-[#2a2a2a] rounded-xl shadow-lg border border-[#404040]">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
+      <div className="max-w-md w-full space-y-8 p-8 rounded-xl shadow-lg" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white">Welcome back</h1>
-          <p className="mt-2 text-[#a0a0a0]">Sign in to your account</p>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>Welcome back</h1>
+          <p className="mt-2" style={{ color: 'var(--text-muted)' }}>Sign in to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           {error && (
-            <div className="p-4 bg-red-900/30 border border-red-700 rounded-lg">
-              <p className="text-sm text-red-400">{error}</p>
+            <div className="p-4 rounded-lg" style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid var(--danger)' }}>
+              <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>
             </div>
           )}
 
@@ -61,13 +60,6 @@ export default function LoginForm() {
           <Button type="submit" isLoading={isLoading}>
             Sign in
           </Button>
-
-          <p className="text-center text-sm text-[#a0a0a0]">
-            Do not have an account?{' '}
-            <Link href="/register" className="text-[#f5b229] hover:text-[#d99a1f] font-medium">
-              Sign up
-            </Link>
-          </p>
         </form>
       </div>
     </div>
