@@ -14,6 +14,8 @@ interface ChatState {
   fetchConversations: () => Promise<void>;
   createConversation: (otherUserId: string) => Promise<Conversation>;
   setCurrentConversation: (conversation: Conversation | null) => void;
+  updateCurrentConversation: (conversation: Conversation) => void;
+  removeConversation: (conversationId: string) => void;
   fetchMessages: (conversationId: string) => Promise<void>;
   addMessage: (message: Message) => void;
   setTyping: (userId: string, typing: boolean) => void;
@@ -66,6 +68,24 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   setCurrentConversation: (conversation: Conversation | null) => {
     set({ currentConversation: conversation, messages: [] });
+  },
+
+  updateCurrentConversation: (conversation: Conversation) => {
+    set((state) => ({
+      currentConversation: conversation,
+      conversations: state.conversations.map((c) =>
+        c.id === conversation.id ? conversation : c
+      ),
+    }));
+  },
+
+  removeConversation: (conversationId: string) => {
+    set((state) => ({
+      conversations: state.conversations.filter((c) => c.id !== conversationId),
+      currentConversation: state.currentConversation?.id === conversationId
+        ? null
+        : state.currentConversation,
+    }));
   },
 
   fetchMessages: async (conversationId: string) => {

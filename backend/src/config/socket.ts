@@ -255,3 +255,21 @@ export const getIO = (): SocketIOServer => {
   }
   return io;
 };
+
+export const emitGroupUpdate = (conversationId: string, group: any) => {
+  io.to(conversationId).emit('group_updated', group);
+};
+
+export const emitMemberRemoved = (conversationId: string, memberId: string, groupId: string) => {
+  io.to(memberId).emit('removed_from_group', { conversationId });
+  io.to(conversationId).emit('member_removed', { conversationId, memberId });
+};
+
+export const emitMemberAdded = (conversationId: string, userId: string, group: any) => {
+  io.to(userId).emit('added_to_group', group);
+  io.to(conversationId).emit('member_added', { conversationId, userId, group });
+};
+
+export const emitGroupDeleted = (conversationId: string) => {
+  io.to(conversationId).emit('group_deleted', { conversationId });
+};

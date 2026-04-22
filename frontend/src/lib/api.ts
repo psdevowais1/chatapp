@@ -218,6 +218,19 @@ class ApiClient {
       method: 'DELETE',
     });
   }
+
+  async removeGroupMember(conversationId: string, memberId: string): Promise<{ success: boolean; group: Conversation }> {
+    return this.request<{ success: boolean; group: Conversation }>(`/groups/${conversationId}/members/${memberId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateGroupInfo(conversationId: string, data: { name?: string; groupPhoto?: string }): Promise<Conversation> {
+    return this.request<Conversation>(`/groups/${conversationId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const api = new ApiClient();

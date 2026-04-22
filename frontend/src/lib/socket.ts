@@ -102,3 +102,51 @@ export const onMessagesRead = (callback: (data: { conversationId: string; readBy
 export const offMessagesRead = (): void => {
   socket?.off('messages_read');
 };
+
+export const onGroupUpdated = (callback: (group: any) => void): void => {
+  socket?.on('group_updated', callback);
+};
+
+export const offGroupUpdated = (): void => {
+  socket?.off('group_updated');
+};
+
+export const onMemberAdded = (callback: (data: { conversationId: string; userId: string; group: any }) => void): void => {
+  socket?.on('member_added', callback);
+};
+
+export const offMemberAdded = (): void => {
+  socket?.off('member_added');
+};
+
+export const onMemberRemoved = (callback: (data: { conversationId: string; memberId: string }) => void): void => {
+  socket?.on('member_removed', callback);
+};
+
+export const offMemberRemoved = (): void => {
+  socket?.off('member_removed');
+};
+
+export const onAddedToGroup = (callback: (group: any) => void): void => {
+  socket?.on('added_to_group', callback);
+};
+
+export const offAddedToGroup = (): void => {
+  socket?.off('added_to_group');
+};
+
+export const onRemovedFromGroup = (callback: (data: { conversationId: string }) => void): void => {
+  socket?.on('removed_from_group', callback);
+};
+
+export const offRemovedFromGroup = (): void => {
+  socket?.off('removed_from_group');
+};
+
+export const onGroupDeleted = (callback: (data: { conversationId: string }) => void): void => {
+  socket?.on('group_deleted', callback);
+};
+
+export const offGroupDeleted = (): void => {
+  socket?.off('group_deleted');
+};

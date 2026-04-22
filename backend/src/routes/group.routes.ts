@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.middleware.js';
-import { createGroup, addMembersToGroup, getGroupMembers, leaveGroup, deleteGroup } from '../services/group.service.js';
+import { createGroup, addMembersToGroup, getGroupMembers, leaveGroup, deleteGroup, removeMemberFromGroup, updateGroupInfo } from '../services/group.service.js';
+import { emitGroupUpdate, emitMemberRemoved, emitMemberAdded, emitGroupDeleted } from '../config/socket.js';
 import { AuthenticatedRequest } from '../types/index.js';
 import { Response } from 'express';
 
@@ -21,6 +22,15 @@ router.post('/create', authMiddleware, async (req: AuthenticatedRequest, res: Re
       memberEmails,
       groupPhoto,
     });
+
+    // Emit socket events to new members
+    if (group.participants) {
+      group.participants.forEach((participant: any) => {
+        if (participant.id !== creatorId) {
+          emitMemberAdded(group.id, participant.id, group);
+        }
+      });
+    }
 
     res.json(group);
   } catch (error) {
@@ -43,6 +53,14 @@ router.post('/add-members', authMiddleware, async (req: AuthenticatedRequest, re
       emails,
       addedBy,
     });
+
+    // Emit socket events for new members
+    if (group?.participants) {
+      const newMemberIds = group.participants.map((p: any) => p.id);
+      newMemberIds.forEach((userId: string) => {
+        emitMemberAdded(conversationId, userId, group);
+      });
+    }
 
     res.json(group);
   } catch (error) {
@@ -68,6 +86,7 @@ router.post('/:conversationId/leave', authMiddleware, async (req: AuthenticatedR
     const userId = req.userId!;
 
     await leaveGroup(conversationId, userId);
+    emitMemberRemoved(conversationId, userId, conversationId);
     res.json({ success: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to leave group';
@@ -81,9 +100,39 @@ router.delete('/:conversationId', authMiddleware, async (req: AuthenticatedReque
     const userId = req.userId!;
 
     await deleteGroup(conversationId, userId);
+    emitGroupDeleted(conversationId);
     res.json({ success: true, message: 'Group deleted successfully' });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete group';
+    res.status(403).json({ error: message });
+  }
+});
+
+router.delete('/:conversationId/members/:memberId', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { conversationId, memberId } = req.params;
+    const userId = req.userId!;
+
+    const group = await removeMemberFromGroup(conversationId, memberId, userId);
+    emitMemberRemoved(conversationId, memberId, conversationId);
+    res.json({ success: true, group });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to remove member';
+    res.status(403).json({ error: message });
+  }
+});
+
+router.patch('/:conversationId', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.userId!;
+    const { name, groupPhoto } = req.body;
+
+    const group = await updateGroupInfo(conversationId, userId, { name, groupPhoto });
+    emitGroupUpdate(conversationId, group);
+    res.json(group);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update group';
     res.status(403).json({ error: message });
   }
 });

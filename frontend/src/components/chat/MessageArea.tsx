@@ -9,6 +9,7 @@ import { api, Conversation, Message } from '../../lib/api';
 import Avatar from '../ui/Avatar';
 import VoiceMessage from '../ui/VoiceMessage';
 import CreateGroupModal from '../group/CreateGroupModal';
+import GroupSettingsModal from '../group/GroupSettingsModal';
 import NewChatModal from './NewChatModal';
 import {
   initSocket,
@@ -45,6 +46,7 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
   const [recordingTime, setRecordingTime] = useState(0);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
+  const [showGroupSettings, setShowGroupSettings] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -387,24 +389,36 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
         {isGroup ? (
-          <div className="flex-1">
-            <h2 className="font-semibold text-white">{conversation.groupName}</h2>
-            <p className="text-sm text-[#a0a0a0]">{conversation.participants.length} members</p>
-          </div>
-        ) : (
-          <div className="flex-1">
-            <h2 className="font-semibold text-white">{otherUser?.name}</h2>
-            <p className="text-sm text-[#a0a0a0]">{otherUser?.email}</p>
-          </div>
-        )}
-        {isGroupCreator && (
           <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="p-2 hover:bg-red-900/30 rounded-lg transition-colors"
-            title="Delete Group"
+            onClick={() => setShowGroupSettings(true)}
+            className="flex-1 flex items-center gap-3 hover:bg-[#3a3a3a] p-2 -m-2 rounded-lg transition-colors"
           >
-            <Trash2 className="w-5 h-5 text-red-400" />
+            <div className="w-10 h-10 rounded-full bg-[#4a4a4a] flex items-center justify-center overflow-hidden flex-shrink-0">
+              {conversation.groupPhoto ? (
+                <img
+                  src={`http://localhost:5000${conversation.groupPhoto}`}
+                  alt={conversation.groupName || 'Group'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-sm font-semibold text-[#f5b229]">
+                  {conversation.groupName?.charAt(0).toUpperCase() || 'G'}
+                </span>
+              )}
+            </div>
+            <div className="text-left">
+              <h2 className="font-semibold text-white">{conversation.groupName}</h2>
+              <p className="text-sm text-[#a0a0a0]">{conversation.participants.length} members</p>
+            </div>
           </button>
+        ) : (
+          <div className="flex-1 flex items-center gap-3">
+            <Avatar user={otherUser} size="md" />
+            <div>
+              <h2 className="font-semibold text-white">{otherUser?.name}</h2>
+              <p className="text-sm text-[#a0a0a0]">{otherUser?.email}</p>
+            </div>
+          </div>
         )}
       </div>
 
@@ -601,6 +615,15 @@ export default function MessageArea({ conversation, onBack }: MessageAreaProps) 
           </button>
         </div>
       </form>
+
+      {/* Group Settings Modal */}
+      {showGroupSettings && conversation && (
+        <GroupSettingsModal
+          isOpen={showGroupSettings}
+          onClose={() => setShowGroupSettings(false)}
+          conversation={conversation}
+        />
+      )}
 
       {/* Delete Group Confirmation Modal */}
       {showDeleteConfirm && (
